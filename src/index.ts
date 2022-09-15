@@ -1,3 +1,5 @@
 import * as dotenv from 'dotenv';
 dotenv.config()
-console.log(process.env);
+import initialize from './initialize'
+
+initialize()

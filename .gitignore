@@ -129,3 +129,4 @@ dist
 /node_modules
 /build
 /.vscode
+/data/portfolio.json
