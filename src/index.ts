@@ -1,5 +1,12 @@
 import * as dotenv from 'dotenv';
-dotenv.config()
-import initialize from './initialize'
+import initialize from './initialize';
+dotenv.config();
 
-initialize()
+const main = async () => {
+  initialize();
+};
+
+
+main().catch((error) => {
+  console.error(error);
+});
