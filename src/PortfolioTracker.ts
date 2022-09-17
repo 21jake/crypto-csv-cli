@@ -26,8 +26,9 @@ export class PortfolioTracker implements IPortfolioTracker {
       }
       const { [ArgKeys.DATE]: date, [ArgKeys.TOKEN]: token } = this.args;
 
+      this.validateDate(date);
+      
       const dateTs = dayjs(date).unix();
-      if (!dateTs) throw `Invalid date '${date}'. Use YYYY-MM-DD format.`;
 
       if (date && token) {
         const { value, tokenCount } = await this.inspectSingleByDate(token, dateTs);
@@ -68,7 +69,7 @@ export class PortfolioTracker implements IPortfolioTracker {
       // Filter out the token from portfolio. Also exclude records that happened after the given date
       const tokenRecords = portfolio.filter(({ token, timestamp }: IRecord) => token === symbol && timestamp <= ts);
       if (!tokenRecords.length) {
-        console.log(`No records found for the symbol: '${symbol}' before ${ts}`);
+        console.log(`No records found for the symbol: '${symbol}' before ${dayjs.unix(ts).format('YYYY/MM/DD')}`);
       }
       const tokenCount = this.countToken(tokenRecords);
       const price = await this.api.getSingleHistoricalPrice(symbol, ts);
@@ -106,4 +107,11 @@ export class PortfolioTracker implements IPortfolioTracker {
     }
     return tokenCount;
   };
+
+  private validateDate = (date: string) => {
+    const formatted = dayjs(date);
+    if (formatted.format('YYYY/MM/DD') !== date) {
+      throw `Invalid date '${date}'. Use YYYY-MM-DD format.`;
+    }
+  }
 }

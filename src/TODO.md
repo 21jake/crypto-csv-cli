@@ -2,4 +2,3 @@
 2. test case
 3. format the output
 4. documenting
-5. validating arguments
