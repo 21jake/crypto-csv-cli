@@ -33,7 +33,7 @@ const initialize = () => {
       },
     });
 
-    console.log('Done!');
+    console.log('Initialization done!');
   } catch (error) {
     throw `Error in initializing portfolio: ${error}`;
   }

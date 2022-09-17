@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es5",                          
+    "target": "ES6",               
+               
     "module": "commonjs",                    
-    "lib": ["es6", "dom"],                     
+    "lib": ["es6", "dom", "ES2017"],                     
     "allowJs": true,
     "outDir": "build",                          
     "rootDir": "src",
