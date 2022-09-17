@@ -15,7 +15,9 @@ const read = () => {
 };
 
 const write = (parsed: IRecord[]) => {
-  const json = JSON.stringify(parsed, null, 2);
+  const sorted = parsed.sort((a, b) => a.timestamp - b.timestamp);
+  const json = JSON.stringify(sorted, null, 2);
+
   fs.writeFileSync('src/data/portfolio.json', json);
 };
 
@@ -26,9 +28,12 @@ const initialize = () => {
 
     parse(stream, {
       header: true,
-      dynamicTyping: true,      
-      complete: function (results: ParseResult<IRecord>) {
-        if (results.errors.length > 0) throw results.errors;
+      dynamicTyping: true,
+      complete: (results: ParseResult<IRecord>) => {
+        if (results.errors.length > 0) {
+          console.log(`Error in parsing file. Please check the CSV file: ${JSON.stringify(results.errors)}`);
+          throw new Error('Error in parsing file. Please check the CSV file');
+        }
         write(results.data);
       },
     });

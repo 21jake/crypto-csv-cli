@@ -3,9 +3,9 @@ export enum TxType {
     WITHDRAWAL = 'WITHDRAWAL',
   }
   export interface IRecord {
-    transaction_type: TxType;
-    amount: string;
+    transaction_type: TxType | string;
+    amount: number;
     token: string;
-    timestamp: string;
+    timestamp: number;
   }
   

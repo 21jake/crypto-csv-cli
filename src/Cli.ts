@@ -1,5 +1,7 @@
 import readline from 'readline';
 import { Args, Commands, commandsHierachy } from './config';
+import { PortfolioTracker } from './PortfolioTracker';
+import { performance } from 'perf_hooks'
 
 interface ICli {
   read: () => void;
@@ -30,7 +32,7 @@ export class Cli implements ICli {
   }
 
   public read() {
-    this.rl.question('Command: ', (command) => {
+    this.rl.question("$ ", (command) => {
       this.handle(command);
       this.read();
     });
@@ -42,7 +44,7 @@ export class Cli implements ICli {
 
     const isValidCommand = Object.values(Commands).includes(commandName as Commands);
     if (!isValidCommand) {
-      console.log('Unrecognized command. Please check your spelling. Type "help" for a list of available commands.');
+      console.log(`Unrecognized command '${commandName}'. Check your spelling. Type "help" for a list of available commands.`);
       return;
     }
 
@@ -96,8 +98,8 @@ export class Cli implements ICli {
   }
 
   private trim(command: string) {
-    const trimmed = command.replace(/\s\s+/g, ' ').trim();
-    return trimmed;
+    return command.replace(/\s\s+/g, ' ').trim();
+    
   }
 
   private exit = () => {
@@ -106,13 +108,21 @@ export class Cli implements ICli {
     process.exit(0);
   };
 
-  private inspect(command: string, args: string[]) {
-    console.log('Inspecting',command, args);
-
-    // console.log('Inspecting...');
+  private inspect(command: string, args: Args) {
+    const tracker = new PortfolioTracker(args);
+    const startTime = performance.now()
+    console.log(`Start executing command: ${command}`);
+    
+    tracker.track().then(() => {
+      const endTime = performance.now()
+      console.log(`Command executed. Execution time: ${((endTime - startTime)/1000).toFixed(4)} seconds`);
+    }).catch((err) => {
+      console.log(err);
+    });
+    
   }
 
-  private getKeyValuesCommandArgs = (args: string[]) => {
+  private getKeyValuesCommandArgs = (args: string[]): Args => {
     // From "-d 12/10/1999 -t ETH"
     // To { '-d': '12/10/1996', '-t': 'ETH' }
      const keyValues: { [key: string]: string} = {};
