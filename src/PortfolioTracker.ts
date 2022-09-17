@@ -5,8 +5,9 @@ import portfolio from './data/portfolio.json';
 import { IRecord, TxType } from './typings/record';
 
 interface IPortfolioTracker {
-  track: () => Promise<any>;
+  track: () => Promise<void>;
 }
+type TInspectionResult = { value: number; tokenCount: number };
 export class PortfolioTracker implements IPortfolioTracker {
   args: Args;
   api: IApi;
@@ -19,29 +20,33 @@ export class PortfolioTracker implements IPortfolioTracker {
   public async track() {
     try {
       const noArgs = Object.keys(this.args).length === 0;
+
+      const { [ArgKeys.DATE]: date, [ArgKeys.TOKEN]: token } = this.args;
+
+      if (date) {
+        this.validateDate(date);
+      }
+
+      const dateTs = dayjs(date).unix();
+
       if (noArgs) {
-        const totalValuePerTokens = await this.inspectAll();
+        const totalValuePerTokens = await this.inspectSymbols();
         const sum = totalValuePerTokens.reduce((acc, { value }) => acc + value, 0);
         return console.log(`Latest portfolio value: $${sum}`);
       }
-      const { [ArgKeys.DATE]: date, [ArgKeys.TOKEN]: token } = this.args;
-
-      this.validateDate(date);
-      
-      const dateTs = dayjs(date).unix();
 
       if (date && token) {
-        const { value, tokenCount } = await this.inspectSingleByDate(token, dateTs);
+        const { value, tokenCount } = await this.inspectSymbol(token, dateTs);
         return console.log(`Value of ${tokenCount} ${token} in the portfolio by ${date}: $${value}`);
       }
 
       if (token) {
-        const { value, tokenCount } = await this.inspectSingle(token);
+        const { value, tokenCount } = await this.inspectSymbol(token);
         return console.log(`Current value of ${tokenCount} ${token} in the portfolio :$${value}`);
       }
 
       if (date) {
-        const totalValuePerTokens = await this.inspectAllByDate(dateTs);
+        const totalValuePerTokens = await this.inspectSymbols(dateTs);
         const sum = totalValuePerTokens.reduce((acc, { value }) => acc + value, 0);
         return console.log(`Total value the portfolio by ${date}: $${sum}`);
       }
@@ -50,48 +55,31 @@ export class PortfolioTracker implements IPortfolioTracker {
     }
   }
 
-  private inspectAllByDate = async (ts: number): Promise<{ value: number; tokenCount: number }[]> => {
+  private inspectSymbols = async (ts?: number): Promise<TInspectionResult[]> => {
     const uniqueSymbols = Array.from(new Set(portfolio.map((e) => e.token)));
-    const promises = uniqueSymbols.map((symbol) => this.inspectSingleByDate(symbol, ts));
+    const promises = uniqueSymbols.map((symbol) => this.inspectSymbol(symbol, ts));
     const results = await Promise.all(promises);
     return results;
   };
 
-  private inspectAll = async (): Promise<{ value: number; tokenCount: number }[]> => {
-    const uniqueSymbols = Array.from(new Set(portfolio.map((e) => e.token)));
-    const promises = uniqueSymbols.map((symbol) => this.inspectSingle(symbol));
-    const results = await Promise.all(promises);
-    return results;
-  };
-
-  private inspectSingleByDate = async (symbol: string, ts: number): Promise<{ value: number; tokenCount: number }> => {
+  private inspectSymbol = async (symbol: string, ts?: number): Promise<TInspectionResult> => {
     try {
-      // Filter out the token from portfolio. Also exclude records that happened after the given date
-      const tokenRecords = portfolio.filter(({ token, timestamp }: IRecord) => token === symbol && timestamp <= ts);
+      // Filter out the token from portfolio. If a date is specified, exclude records that happened after the date
+      const tokenRecords = portfolio.filter((e) => {
+        const similarSymbol = e.token === symbol;
+        const beforeChosenDate = e.timestamp <= Number(ts);
+        return ts ? similarSymbol && beforeChosenDate : similarSymbol;
+      });
       if (!tokenRecords.length) {
-        console.log(`No records found for the symbol: '${symbol}' before ${dayjs.unix(ts).format('YYYY/MM/DD')}`);
+        const textIfDateSpecified = ts ? ` before ${dayjs.unix(ts).format('YYYY-MM-DD')}` : '';
+        console.log(`No records found for the symbol: '${symbol}' ${textIfDateSpecified}`);
       }
       const tokenCount = this.countToken(tokenRecords);
-      const price = await this.api.getSingleHistoricalPrice(symbol, ts);
+      const price = await this.api.getSymbolPrice(symbol, ts);
       const value = price[symbol][Currency.USD] * tokenCount;
       return { value, tokenCount };
     } catch (error) {
-      throw `Error in inspecting single token on given date: ${error}`;
-    }
-  };
-
-  private inspectSingle = async (symbol: string): Promise<{ value: number; tokenCount: number }> => {
-    try {
-      const tokenRecords: IRecord[] = portfolio.filter(({ token }) => token === symbol);
-      if (!tokenRecords.length) {
-        console.log(`No records found for the symbol: '${symbol}' `);
-      }
-      const tokenCount = this.countToken(tokenRecords);
-      const price = await this.api.getMultipleCurrentPrice([symbol]);
-      const value = price[symbol][Currency.USD] * tokenCount;
-      return { value, tokenCount };
-    } catch (error) {
-      throw `Error in inspecting single token: ${error}`;
+      throw `Error in inspecting single token ${ts ? 'on given date ' : ''}: ${error}`;
     }
   };
 
@@ -102,6 +90,8 @@ export class PortfolioTracker implements IPortfolioTracker {
       }
       return acc - Number(amount);
     }, 0);
+
+    // In case there are more withdrawals than deposits, set the token count to 0
     if (tokenCount <= 0) {
       tokenCount = 0;
     }
@@ -111,7 +101,7 @@ export class PortfolioTracker implements IPortfolioTracker {
   private validateDate = (date: string) => {
     const formatted = dayjs(date);
     if (formatted.format('YYYY/MM/DD') !== date) {
-      throw `Invalid date '${date}'. Use YYYY-MM-DD format.`;
+      throw `Invalid date '${date}'. Use the <YYYY-MM-DD> format.`;
     }
-  }
+  };
 }

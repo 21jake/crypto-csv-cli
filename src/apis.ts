@@ -6,15 +6,13 @@ export enum Currency {
   USD = 'USD',
 }
 interface IParams {
-  fsym?: string;
+  fsym: string;
   tsyms: Currency.USD;
-  ts?: number;
-  fsyms?: string;
+  ts: number;
 }
 
 export interface IApi {
-  getSingleHistoricalPrice: (token: string, ts: number) => Promise<IGetPriceResp>;
-  getMultipleCurrentPrice: (tokens: string[]) => Promise<IGetPriceResp>;
+  getSymbolPrice: (token: string, ts?: number) => Promise<IGetPriceResp>;
 }
 export interface IGetPriceResp {
   [key: string]: {
@@ -33,26 +31,17 @@ export class Api implements IApi {
       },
     });
   }
-  public getSingleHistoricalPrice = async (token: string, ts: number) => {
+
+  public getSymbolPrice = async (token: string, ts: number = dayjs().unix()): Promise<IGetPriceResp> => {
+    // If no ts is provided, get current price
     const params: IParams = {
       fsym: token,
       ts,
       tsyms: Currency.USD,
     };
-    
+
     const { data } = await this.instance.get<IGetPriceResp>('pricehistorical', { params });
+    return data
+  }
 
-    return data;
-  };
-
-  public getMultipleCurrentPrice = async (tokens: string[]) => {
-    const params: IParams = {
-      fsyms: tokens.join(',').trim(),
-      tsyms: Currency.USD,
-    };
-
-    const { data } = await this.instance.get<IGetPriceResp>('pricemulti', { params });
-
-    return data;
-  };
 }

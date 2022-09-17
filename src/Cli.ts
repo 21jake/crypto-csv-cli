@@ -81,7 +81,7 @@ export class Cli implements ICli {
 
   private listCommands() {
     console.log('Usage: <COMMAND> [<argument key> <argument value>...]');
-    console.log('Example: inspect -d 12/10/1999 -t ETH');
+    console.log('Example: inspect -d 2021/12/10 -t ETH');
     console.log('Available commands:');
     for (const c in commandsHierachy) {
       const command = c as Commands;
