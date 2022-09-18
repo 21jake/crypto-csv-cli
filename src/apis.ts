@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import dayjs from 'dayjs';
 const { CC_API_KEY } = process.env;
 

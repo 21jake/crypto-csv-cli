@@ -4,10 +4,14 @@ import { ArgKeys, Args } from './config';
 import portfolio from './data/portfolio.json';
 import { IRecord, TxType } from './typings/record';
 
+const {NODE_ENV} = process.env
+const isTestEnv = NODE_ENV === 'test'
+
+
 interface IPortfolioTracker {
-  track: () => Promise<void>;
+  track: () => Promise<number>;
 }
-type TInspectionResult = { value: number; tokenCount: number };
+export type TInspectionResult = { value: number; tokenCount: number };
 export class PortfolioTracker implements IPortfolioTracker {
   args: Args;
   api: IApi;
@@ -18,6 +22,7 @@ export class PortfolioTracker implements IPortfolioTracker {
   }
 
   public async track() {
+
     try {
       const noArgs = Object.keys(this.args).length === 0;
 
@@ -26,37 +31,42 @@ export class PortfolioTracker implements IPortfolioTracker {
       if (date) {
         this.validateDate(date);
       }
-
       const dateTs = dayjs(date).unix();
 
       if (noArgs) {
         const totalValuePerTokens = await this.inspectSymbols();
         const sum = totalValuePerTokens.reduce((acc, { value }) => acc + value, 0);
-        return console.log(`Latest portfolio value: $${sum}`);
+        
+        !isTestEnv && console.log(`Latest portfolio value: $${sum}`);
+        return sum;
       }
 
       if (date && token) {
         const { value, tokenCount } = await this.inspectSymbol(token, dateTs);
-        return console.log(`Value of ${tokenCount} ${token} in the portfolio by ${date}: $${value}`);
+        !isTestEnv && console.log(`Value of ${tokenCount} ${token} in the portfolio by ${date}: $${value}`);
+        return value;
       }
 
       if (token) {
         const { value, tokenCount } = await this.inspectSymbol(token);
-        return console.log(`Current value of ${tokenCount} ${token} in the portfolio :$${value}`);
+        !isTestEnv && console.log(`Current value of ${tokenCount} ${token} in the portfolio :$${value}`);
+        return value;
       }
 
       if (date) {
         const totalValuePerTokens = await this.inspectSymbols(dateTs);
         const sum = totalValuePerTokens.reduce((acc, { value }) => acc + value, 0);
-        return console.log(`Total value the portfolio by ${date}: $${sum}`);
+        !isTestEnv && console.log(`Total value the portfolio by ${date}: $${sum}`);
+        return sum;
       }
+      return 0;
     } catch (error) {
       throw `Error in tracking portfolio: ${error}`;
     }
   }
 
   private inspectSymbols = async (ts?: number): Promise<TInspectionResult[]> => {
-    const uniqueSymbols = Array.from(new Set(portfolio.map((e) => e.token)));
+    const uniqueSymbols = Array.from(new Set(portfolio.map(({ token }) => token)));
     const promises = uniqueSymbols.map((symbol) => this.inspectSymbol(symbol, ts));
     const results = await Promise.all(promises);
     return results;
@@ -65,9 +75,9 @@ export class PortfolioTracker implements IPortfolioTracker {
   private inspectSymbol = async (symbol: string, ts?: number): Promise<TInspectionResult> => {
     try {
       // Filter out the token from portfolio. If a date is specified, exclude records that happened after the date
-      const tokenRecords = portfolio.filter((e) => {
-        const similarSymbol = e.token === symbol;
-        const beforeChosenDate = e.timestamp <= Number(ts);
+      const tokenRecords = portfolio.filter(({ token, timestamp }) => {
+        const similarSymbol = token === symbol;
+        const beforeChosenDate = timestamp <= Number(ts);
         return ts ? similarSymbol && beforeChosenDate : similarSymbol;
       });
       if (!tokenRecords.length) {
