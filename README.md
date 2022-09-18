@@ -6,7 +6,11 @@ A command line program tracks your crypto portfolio from a CSV file.
 
 Create (or replace the existing mock file) a `portfolio.csv` file inside the src/data folder. The format for the CSV file is as follow:
 - 4 columns: `timestamp`, `transaction_type`, `token`, `amount`
-- Use dot (`.`) as the decimal separator
+- Use dot (`.`) as the decimal separator in the CSV
+
+## Start
+- run `npm install` and `npm run start` to start using the CLI
+- run `npm run test` for test cases
 
 ## Considerations
 
