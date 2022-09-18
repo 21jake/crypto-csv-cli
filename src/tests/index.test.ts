@@ -1,23 +1,26 @@
 import { expect } from 'chai';
 import dayjs from 'dayjs';
-import { Api } from '../Apis';
 import { ArgKeys, Args } from '../config';
-import portfolio from '../data/portfolio.json';
+import initialize from '../initialize';
 import { PortfolioTracker } from '../PortfolioTracker';
-import { TxType } from '../typings/record';
 import { inspectMany, inspectSingle } from './testUtils';
 
 describe('Portfolio inspection suite', () => {
+  before(() => {
+    initialize();
+  });
+
   it('If no argument specified, latest portfolio value shall be inspected', async () => {
     const args: Args = {};
     const tracker = new PortfolioTracker(args);
     const expected = await inspectMany();
     const expectedSum = expected.reduce((acc, { value }) => acc + value, 0);
     const actualSum = await tracker.track();
-    
+
     expect(Math.abs(actualSum - expectedSum)).to.not.greaterThan(0.01 * actualSum);
 
     /**
+     * 1663485660 is the timestamp at the time of writing this test
      * Since the API returns inconsistent price result for current TS, allow a 0.01% difference between the `actualySum` and `expectedSum`
         /data/pricehistorical?fsym=ETH&ts=1663485660&tsyms=USD
         { ETH: { USD: 1455.41 } } result.data
