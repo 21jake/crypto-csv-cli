@@ -1,6 +1,6 @@
 # crypto-csv-cli
 
-A command line program tracks your crypto portfolio from CSV file.
+A command line program tracks your crypto portfolio from a CSV file.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Create (or replace the existing mock file) a `portfolio.csv` file inside the src
 
 ## Considerations
 
-I built this CLI with the intention of keeping it simple, lightweight, open to upgrade and maintain, while providing an continous/non-disruptive experience for the users.
+I built this CLI with the intention of keeping it simple, lightweight, open to upgrade and maintain, while providing a continous/non-disruptive experience for the users.
 
 Below are some noteworthy points from my POV:
 
@@ -36,9 +36,9 @@ Below are some noteworthy points from my POV:
 
    <br>
 
-   The first 3 things with third party libs are quite straightforward. However I couldn't figure out a way to keep the process alive after finish the first task. And, they seem to be quite "heavy" for a simple task of asking for user's input.
+   The first 3 things with third party libs are quite straightforward. However I couldn't figure out a way to keep the process alive after finishing the first task. And, they seem to be quite "heavy" for a simple task of asking for the user's input.
 
-   Therefore the interface is built with a native prompt package. The commands hierachy and their arguments are defined by simple key/value mappings inside the `config.ts` file. This would make the command logic open for upgrade, for example when you need to add a new command, or an argument for a command.
+   Therefore the interface is built with a native prompt package. The commands hierarchy and their arguments are defined by simple key/value mappings inside the `config.ts` file. This would make the command logic open for upgrade, for example when you need to add a new command, or an argument for a command.
 
 <br>
 
@@ -59,7 +59,7 @@ Below are some noteworthy points from my POV:
 
    For example, I have 3 symbols BTC, ETH, BNB within the portfolio, if I were to use the **many** endpoint, the API provider would just have to deal with one request. However since I'm not, they have to process 3 requests. And I have my reasons:
 
-    - `CryptoCompare` don't have the endpoint to query historical price for many symbols. And I will have to adopt composition anyway, only at a lesser degree.
+    - `CryptoCompare` doesn't have the endpoint to query historical prices for many symbols. And I will have to adopt composition anyway, only at a lesser degree.
     - Their servers can handle it. For personal use it's hard to surpass 100,000 network requests monthly
     - This is not my server, and I can always get a new key for free.
 
