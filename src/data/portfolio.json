@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": 1600362000,
+    "transaction_type": "DEPOSIT",
+    "token": "BTC",
+    "amount": 3
+  },
+  {
+    "timestamp": 1615136400,
+    "transaction_type": "WITHDRAWAL",
+    "token": "BTC",
+    "amount": 1
+  },
+  {
+    "timestamp": 1651683600,
+    "transaction_type": "DEPOSIT",
+    "token": "BTC",
+    "amount": 3
+  },
+  {
+    "timestamp": 1652806800,
+    "transaction_type": "DEPOSIT",
+    "token": "ETH",
+    "amount": 4
+  },
+  {
+    "timestamp": 1654621200,
+    "transaction_type": "WITHDRAWAL",
+    "token": "BTC",
+    "amount": 4
+  },
+  {
+    "timestamp": 1655485200,
+    "transaction_type": "DEPOSIT",
+    "token": "ETH",
+    "amount": 2
+  },
+  {
+    "timestamp": 1662570000,
+    "transaction_type": "WITHDRAWAL",
+    "token": "ETH",
+    "amount": 3
+  }
+]

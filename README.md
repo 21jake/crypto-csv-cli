@@ -1,28 +1,37 @@
 # crypto-csv-cli
 
-A command line program tracks your crypto portfolio from CSV file
+A command line program tracks your crypto portfolio from CSV file.
+
+## Usage
+
+Create (or replace the existing mock file) a `portfolio.csv` file inside the src/data folder. The format for the CSV file is as follow:
+- 4 columns: `timestamp`, `transaction_type`, `token`, `amount`
+- Use dot (`.`) as the decimal separator
+
+## Considerations
 
 I built this CLI with the intention of keeping it simple, lightweight, open to upgrade and maintain, while providing an continous/non-disruptive experience for the users.
 
 Below are some noteworthy points from my POV:
 
 1. **The CSV file is "cloned" into a JSON file**
+
    During the initialization phase of the program, the CSV file is parsed once into the `portfolio.json` file for these reasons:
-   - Strict typings could be applied for `json` files. This is preferable for a Typescript project.
+   - Strict typings could be applied for `json` files. This is important for a Typescript project.
    - While `csv` is excellent with small files, `json` is superior while working with huge volume of data, and in terms of scalability.
-   - The `json` file could serve as a "convenient global state" available to every file, and completely compatible with native `javascript` methods. On the contrary, the `csv` file requires parsing for every file-reading attempt.
+   - The `json` file could serve as a "convenient global state" readily accessible for every file, and completely compatible with native `javascript` methods. On the contrary, the `csv` file requires parsing for every file-reading attempt.
 
 <br>
 
 2. **Self-built interface for the CLI**
 
-   The interface is built with native packages. At first I tried some third parties (`commanderjs`, `inquirer`, `yargs`, etc.), however they failed to bring the aforementioned "non-disruptive" UX.
+   The interface is built with native `readline` packages. At first I tried some third parties (`commanderjs`, `inquirer`, `yargs`, etc.), however they failed to bring the aforementioned "non-disruptive" UX.
 
    The interaction flow I was trying to create:
 
    - Display the help panel, showing available commands with options, asking for the input.
-   - Read the input, perform the according task.
-   - Showing result.
+   - Read the input, perform the corresponding task.
+   - Showing results.
    - Display the help panel again without exiting the NodeJS process. Only exit if the user wants to.
 
    <br>
@@ -44,7 +53,7 @@ Below are some noteworthy points from my POV:
 
    <br>
 
-   These four tasks could be solved with a single API endpoint (`Day Pair OHLCV by TS`), which accepts parameters including **one specified token** and the specified timestamps. Therefore, in the `Api` class, there's only one api method `getSymbolPrice` for querying the price for a symbol at a certain timestamps. Every network request to query the value (of one or many symbols) in USD is a composition of this method.
+   These four tasks could be solved with a single API endpoint (`Day Pair OHLCV by TS`), which accepts parameters including **one specified token** and the timestamps. Therefore, in the `Api` class, there's only one api method `getSymbolPrice` for querying the price for a symbol at a certain timestamps. Every network request to query the value (of one or many symbols) in USD is a composition of this method.
 
    `CryptoCompare` actually provides an endpoint to query the current price of **many symbols** (they don't have the same endpoint for the historical price data), but I prefered to use the endpoint querying **one symbol** at a time. This is not optimized for the API provider.
 
@@ -56,4 +65,4 @@ Below are some noteworthy points from my POV:
 
    <br>
 
-   The benefits for the tradeoff are quite considerable: The code is more composed and free from duplicative logic, and somewhat more readable and maintainable.
+   The benefits for the tradeoff are quite considerable: The code is composed and free from duplicative logic, and somewhat more readable and maintainable.
